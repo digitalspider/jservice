@@ -23,31 +23,31 @@ import net.sf.jsefa.csv.CsvIOFactory;
 @RestController
 public class GreetingController {
 	private Logger LOG = Logger.getLogger(GreetingController.class);
-
-    private static final String PROPERTIES_FILENAME = "/app.properties";
-	private static final String template = "Hello, %s!";
+	
+	private static final String PROPERTIES_FILENAME = "/app.properties";
+	private static final String PROP_FILENAME = "filename";
+	private static final String DEFAULT_CSV_APP_FILENAME = "/app.csv";
+    
+	private static final String TEMPLATE = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
     private static final Properties properties = new Properties();
 
     @RequestMapping("/greeting")
     public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
-        return new Greeting(counter.incrementAndGet(),
-                            String.format(template, name));
+        return new Greeting(counter.incrementAndGet(), String.format(TEMPLATE, name));
     }
     
     @RequestMapping("/greetall")
     public List<Greeting> greetAll() throws FileNotFoundException, IOException, Exception {
     	init();
-    	String csvFilename = properties.getProperty("filename", "app.properties2");
+    	String csvFilename = properties.getProperty(PROP_FILENAME, DEFAULT_CSV_APP_FILENAME);
     	
     	List<Greeting> result = new ArrayList<>();
     	Reader reader = new InputStreamReader(getClass().getResourceAsStream(csvFilename));
     	List<Person> people = readCsv(reader);
     	for (Person person : people) {
-    		result.add(new Greeting(counter.incrementAndGet(),
-                    String.format(template, person.getFullName())));
+    		result.add(new Greeting(counter.incrementAndGet(), String.format(TEMPLATE, person.getFullName())));
     	}
-
         return result;
     }
 
