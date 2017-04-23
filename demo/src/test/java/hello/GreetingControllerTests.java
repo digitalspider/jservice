@@ -50,5 +50,14 @@ public class GreetingControllerTests {
                 .andDo(print()).andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("Hello, Spring Community!"));
     }
+    
+    @Test
+    public void testGreetAll() throws Exception {
+
+        this.mockMvc.perform(get("/greetall"))
+                .andDo(print()).andExpect(status().isOk());
+                //.andExpect(jsonPath("$.content").value("Hello, Spring Community!"));
+        // [{"id":1,"content":"Hello, david,test null!"},{"id":2,"content":"Hello, tim,tam null!"},{"id":3,"content":"Hello, gloria,grace null!"}]
+    }
 
 }
