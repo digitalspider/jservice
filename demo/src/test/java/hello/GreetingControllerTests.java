@@ -20,6 +20,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,4 +66,11 @@ public class GreetingControllerTests {
         // [{"id":1,"content":"Hello, david,test null!"},{"id":2,"content":"Hello, tim,tam null!"},{"id":3,"content":"Hello, gloria,grace null!"}]
     }
 
+    @Test
+    public void testReader() throws FileNotFoundException {
+    	Reader reader = new InputStreamReader(getClass().getResourceAsStream("/app.csv"));
+    	List<Person> people = GreetingController.readCsv(reader);
+    	Assert.assertEquals(3, people.size());
+    	Assert.assertEquals("david test", people.get(0).getFullName());
+    }
 }

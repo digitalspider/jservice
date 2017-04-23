@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,8 @@ public class GreetingController {
     	String csvFilename = properties.getProperty("filename", "app.properties2");
     	
     	List<Greeting> result = new ArrayList<>();
-    	List<Person> people = readCsv(csvFilename);
+    	Reader reader = new InputStreamReader(getClass().getResourceAsStream(csvFilename));
+    	List<Person> people = readCsv(reader);
     	for (Person person : people) {
     		result.add(new Greeting(counter.incrementAndGet(),
                     String.format(template, person.getFullName())));
@@ -49,12 +51,11 @@ public class GreetingController {
         return result;
     }
 
-	private List<Person> readCsv(String csvFilename) throws FileNotFoundException {
+	public static List<Person> readCsv(Reader reader) throws FileNotFoundException {
 		List<Person> people = new ArrayList<>();
     	Deserializer deserializer = null;
     	try {
 	    	deserializer = CsvIOFactory.createFactory(Person.class).createDeserializer();
-	    	InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream(csvFilename));
 	    	deserializer.open(reader);
 	    	while (deserializer.hasNext()) {
 	    	    Person person = deserializer.next();
@@ -68,7 +69,7 @@ public class GreetingController {
     	return people;
 	}
 
-	private void writeCsv(Writer writer) {
+	public static void writeCsv(Writer writer) {
 		Serializer serializer = null;
 		try {
 			serializer = CsvIOFactory.createFactory(Person.class).createSerializer();
