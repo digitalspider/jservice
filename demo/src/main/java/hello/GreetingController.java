@@ -16,13 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.opencsv.CSVReader;
+
 import net.sf.jsefa.Deserializer;
 import net.sf.jsefa.Serializer;
 import net.sf.jsefa.csv.CsvIOFactory;
 
 @RestController
 public class GreetingController {
-	private Logger LOG = Logger.getLogger(GreetingController.class);
+	private static Logger LOG = Logger.getLogger(GreetingController.class);
 	
 	private static final String PROPERTIES_FILENAME = "/app.properties";
 	private static final String PROP_FILENAME = "filename";
@@ -51,7 +53,43 @@ public class GreetingController {
         return result;
     }
 
-	public static List<Person> readCsv(Reader reader) throws FileNotFoundException {
+    /**
+     * Read CSV files using OpenCSV
+     * 
+     * @param reader
+     * @return
+     * @throws FileNotFoundException
+     */
+    public static List<Person> readCsv(Reader reader) throws FileNotFoundException {
+		List<Person> people = new ArrayList<>();
+    	CSVReader csvReader = null;
+        try {
+            csvReader = new CSVReader(reader);
+            String[] line;
+            while ((line = csvReader.readNext()) != null) {
+            	Person person = new Person();
+            	if (line.length>1) {
+	            	person.setName(line[0]);
+	            	person.setSurname(line[1]);
+	            	people.add(person);
+            	} else{
+            		LOG.warn("Input line invalid: "+line);
+            	}
+            }
+        } catch (IOException e) {
+            LOG.error(e,e);
+        }
+        return people;
+    }
+    
+    /**
+     * Read CSV files using JSEFA
+     * 
+     * @param reader
+     * @return
+     * @throws FileNotFoundException
+     */
+	public static List<Person> readCsv2(Reader reader) throws FileNotFoundException {
 		List<Person> people = new ArrayList<>();
     	Deserializer deserializer = null;
     	try {

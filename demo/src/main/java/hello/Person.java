@@ -10,11 +10,11 @@ import net.sf.jsefa.xml.annotation.XmlElement;
 public class Person {
 	@CsvField(pos = 1)
 	@XmlElement(pos = 1)
-	String name;
+	private String name;
 	
 	@CsvField(pos = 2)
 	@XmlElement(name = "last-name", pos = 2)
-	String surname;
+	private String surname;
 
 	public String getFullName() {
 		return name+" "+surname;
