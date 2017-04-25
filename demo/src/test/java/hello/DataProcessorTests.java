@@ -77,12 +77,17 @@ public class DataProcessorTests {
 		public List<Person> getPeople() {
 			return people;
 		}
+
+		@Override
+		public String toString() {
+			return "ReadThread [people=" + people + "]";
+		}
 	}
 
     @Test
     public void testReaderWithBatchSize2AndThreads() throws IOException {
     	List<Person> people = new ArrayList<>();
-    	int batchSize = 2;
+    	int batchSize = 4;
     	DataProcessor dataProcessor = new DataProcessor().withBatchSize(batchSize);
     	int count = DataProcessor.countLines(new InputStreamReader(getClass().getResourceAsStream("/app.csv")));
     	Assert.assertEquals(18, count);
@@ -102,8 +107,8 @@ public class DataProcessorTests {
         for (ReadThread thread : threads) {
         	people.addAll(thread.getPeople());
         }
-        Assert.assertEquals(9, threads.size());
-    	Assert.assertEquals(18, people.size());
+        Assert.assertEquals(5, threads.size());
+    	Assert.assertEquals(17, people.size());
     	List<String> names = new ArrayList<>();
     	for (Person person : people) {
     		names.add(person.getFullName());
