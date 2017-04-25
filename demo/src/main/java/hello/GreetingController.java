@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -15,12 +14,6 @@ import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.opencsv.CSVReader;
-
-import net.sf.jsefa.Deserializer;
-import net.sf.jsefa.Serializer;
-import net.sf.jsefa.csv.CsvIOFactory;
 
 @RestController
 public class GreetingController {
@@ -45,79 +38,19 @@ public class GreetingController {
     	String csvFilename = properties.getProperty(PROP_FILENAME, DEFAULT_CSV_APP_FILENAME);
     	
     	List<Greeting> result = new ArrayList<>();
+    	DataProcessor dataProcessor = new DataProcessor().withBatchSize(5);
+
     	Reader reader = new InputStreamReader(getClass().getResourceAsStream(csvFilename));
-    	List<Person> people = readCsv(reader);
-    	for (Person person : people) {
-    		result.add(new Greeting(counter.incrementAndGet(), String.format(TEMPLATE, person.getFullName())));
+    	List<Person> people = dataProcessor.readCsv(reader);
+    	while (!people.isEmpty()) {
+	    	for (Person person : people) {
+	    		result.add(new Greeting(counter.incrementAndGet(), String.format(TEMPLATE, person.getFullName())));
+	    	}
+	    	reader = new InputStreamReader(getClass().getResourceAsStream(csvFilename));
+	    	people = dataProcessor.readCsv(reader);
     	}
         return result;
     }
-
-    /**
-     * Read CSV files using OpenCSV
-     * 
-     * @param reader
-     * @return
-     * @throws FileNotFoundException
-     */
-    public static List<Person> readCsv(Reader reader) throws FileNotFoundException {
-		List<Person> people = new ArrayList<>();
-    	CSVReader csvReader = null;
-        try {
-            csvReader = new CSVReader(reader);
-            String[] line;
-            while ((line = csvReader.readNext()) != null) {
-            	Person person = new Person();
-            	if (line.length>1) {
-	            	person.setName(line[0]);
-	            	person.setSurname(line[1]);
-	            	people.add(person);
-            	} else{
-            		LOG.warn("Input line invalid: "+line);
-            	}
-            }
-        } catch (IOException e) {
-            LOG.error(e,e);
-        }
-        return people;
-    }
-    
-    /**
-     * Read CSV files using JSEFA
-     * 
-     * @param reader
-     * @return
-     * @throws FileNotFoundException
-     */
-	public static List<Person> readCsv2(Reader reader) throws FileNotFoundException {
-		List<Person> people = new ArrayList<>();
-    	Deserializer deserializer = null;
-    	try {
-	    	deserializer = CsvIOFactory.createFactory(Person.class).createDeserializer();
-	    	deserializer.open(reader);
-	    	while (deserializer.hasNext()) {
-	    	    Person person = deserializer.next();
-	    	    people.add(person);
-	    	}
-    	} finally {
-    		if (deserializer!=null) {
-    			deserializer.close(true);
-    		}
-    	}
-    	return people;
-	}
-
-	public static void writeCsv(Writer writer) {
-		Serializer serializer = null;
-		try {
-			serializer = CsvIOFactory.createFactory(Person.class).createSerializer();
-	    	serializer.open(writer);
-		} finally {
-			if (serializer!=null) {
-				serializer.close(true);
-			}
-		}
-	}
 
 	private void init() throws IOException, FileNotFoundException, Exception {
 		if (properties.isEmpty()) {
